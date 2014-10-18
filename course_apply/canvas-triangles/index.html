@@ -1,0 +1,38 @@
+<!DOCTYPE HTML>
+<html>
+
+<head>
+    <style>
+    body {
+        margin: 0px;
+        padding: 0px;
+    }
+    canvas {
+        border: 1px solid;
+    }
+    </style>
+</head>
+
+<body>
+    <div id="app-wrapper">
+        <canvas id="myCanvas" width="600" height="400"></canvas>
+        <div>
+            <input type="color" id="color" />
+            <button type="button" id="saveButton">Save</button>
+            <select name="saves" id="availableSaves"></select>
+            <button type="button" id="loadButton">Load</button>
+            <button type="button" id="clearButton">Clear</button>
+        </div>
+    </div>
+    <script src="bower_components/jquery/dist/jquery.js"></script>
+    <script src="module.js"></script>
+    <script src="triangle.js"></script>
+    <script src="sketchpad.js"></script>
+    <script src="localstorage.js"></script>
+    <script src="app.js"></script>
+    <script>
+        App.start('#app-wrapper')
+    </script>
+</body>
+
+</html>

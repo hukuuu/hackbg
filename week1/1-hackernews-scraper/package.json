@@ -1,0 +1,19 @@
+{
+  "name": "1-hackernews-scraper",
+  "version": "0.0.0",
+  "description": "We want to build a larger system that does something more interesting and complex this time.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^4.9.7",
+    "node-persist": "0.0.2",
+    "body-parser": "^1.9.0",
+    "generate-key": "0.0.6",
+    "request": "^2.45.0",
+    "nodemailer": "^1.3.0"
+  }
+}
