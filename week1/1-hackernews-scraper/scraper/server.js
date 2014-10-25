@@ -1,88 +1,82 @@
-var db = require('../common/articleDb'),
+var itemDb = require('../common/itemDb'),
     https = require('https'),
     http = require('http'),
     request = require("request"),
-    maxItemUrl = 'https://hacker-news.firebaseio.com/v0/maxitem.json',
-    articleUrl = 'https://hacker-news.firebaseio.com/v0/item/',
-    notifier = {
-        host: '0.0.0.0',
-        port: 3001,
-        path: '/newArticles',
-        method: 'POST'
-    }
+    hnApi = require('../common/hnApi.js'),
+    async = require('async'),
+    config = require('../config.json');
 
-setInterval(function() {
-	console.log('pinging site');
-    https.get(maxItemUrl, function(res) {
-        var payload = ''
-        res.on('data', function(chunk) {
-            payload += chunk.toString();
-        });
-        res.on('end', function() {
-            console.log(payload);
-            handleDiff(payload, db.getMax())
-        })
-    }).on('error', function(e) {
-        console.log("Got error: " + e.message);
-    });
-}, 1000 * 30)
 
-function handleDiff(current, dbMax) {
-    var diff = current - dbMax,
-        ids = [];
-    while (dbMax <= current) {
-        ids.push(++dbMax)
-    }
 
-    fetch(ids, function(items) {
-        var notify = false
-        items.forEach(function(item) {
-            if (item) {
-                console.log(item['type']);
-                if (item['type'] === 'story') {
-                    db.addArticle(item)
-                    notify = true
+(function forever() {
+    console.log('***SEARCH TIME***');
+    hnApi.getMaxItem(function(err, item) {
+        if (err)
+            console.log('error occured: ', err);
+        else {
+            var ids = findIds(item, itemDb.getMaxIndex())
+            async.map(ids, scrapeItem, function(err, items) {
+                if (err)
+                    console.log('fuck')
+                else if(items.length > 0) {
+                    console.log('save to notify ', items.length);
+                    itemDb.addItems(items)
+                    itemDb.setMaxIndex(item) //todo
+                    callNotifier()
+                } else {
+                    console.log('no items');
                 }
-
-            }
-        })
-        db.setMax(current) //for testing
-        if (notify) {
-            request({
-                uri: "http://localhost:3001/newArticles",
-                method: "POST"
-            }, function(error, response, body) {
-                console.log('notifier should update');
-            });
-
+                setTimeout(forever, 1 * 30 * 1000)
+            })
         }
     })
+})();
 
-    console.log('ids: ', ids);
+// setInterval(function() {
+
+// }, 1000 * 30)
+
+function callNotifier() {
+    request({
+        url: 'http://localhost:' + config.notifier.port + config.notifier.path,
+        method: config.notifier.method
+    }, function(err, res, body) {
+        //ne me ebe
+    })
 }
 
-function fetch(ids, cb) {
-    var max = ids.length
-    var items = []
-    ids.forEach(function(id) {
-        https.get(articleUrl + id + '.json', function(res) {
-            var payload = ''
-            res.on('data', function(chunk) {
-                payload += chunk.toString();
-            });
-            res.on('end', function() {
-                var article = JSON.parse(payload)
-                console.log(article);
-                if (article) {
-                    article.new = true
-                }
-                items.push(article)
-                if (items.length === max) {
-                    cb(items)
-                }
-            })
-        }).on('error', function(e) {
-            console.log("Got error: " + e.message);
-        });
+function scrapeItem(id, cb) {
+    console.log('scraping ', id);
+    hnApi.getItem(id, function(err, item) {
+        if (err)
+            cb(err)
+        else {
+            handleItem(item, cb)
+        }
     })
+}
+
+function handleItem(item, cb) {
+    if (item.type === 'story') {
+        cb(null, {
+            story: item
+        })
+    } else if (item.type === 'comment') {
+        hnApi.findStory(item, function(err, story) {
+            if (err)
+                cb(err)
+            else
+                cb(null, {
+                    story: story,
+                    comment: item
+                })
+        })
+    }
+}
+
+function findIds(max, current) {
+    var ids = []
+    while (current < max)
+        ids.push(++current)
+    return ids
 }

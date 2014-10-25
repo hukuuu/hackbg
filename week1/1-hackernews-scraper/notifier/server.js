@@ -1,69 +1,96 @@
 var express = require('express'),
-	bodyParser = require('body-parser'),
-	app = express(),
-	subscriberDb = require('../common/subscriberDb'),
-	articleDb = require('../common/articleDb'),
-	nodemailer = require('nodemailer');
-
-var transporter = nodemailer.createTransport({
-	service: 'Gmail',
-	auth: {
-	}
-})
+    bodyParser = require('body-parser'),
+    app = express(),
+    subscriberDb = require('../common/subscriberDb'),
+    itemDb = require('../common/itemDb'),
+    mailSender = require('../common/mailSender'),
+    config = require('../config.json'),
+    hnApi = require('../common/hnApi'),
+    async = require('async')
 
 app.use(bodyParser.json())
-app.use(bodyParser.urlencoded({extended: true}))
+app.use(bodyParser.urlencoded({
+    extended: true
+}))
 
-app.post('/newArticles', function(req, res) {
-	console.log('I SHOULD UPDATE');
-	res.end('ok')
-	notify(subscriberDb.peek(), articleDb.getAllArticles())
+app.post(config.notifier.path, function(req, res) {
+    var items = itemDb.getAllNewItems(),
+        subscribers = subscriberDb.getAllVerified()
+    console.log('I SHOULD UPDATE');
+    res.end('ok')
+
+    notify(subscribers, items)
 })
 
-var server = app.listen(3001, function () {
-
-  var host = server.address().address
-  var port = server.address().port
-
-  console.log('Notifier listening on http://%s:%s', host, port)
-
+var server = app.listen(config.notifier.port, function() {
+    console.log('Notifier listening on http://localhost:' + config.notifier.port)
 })
 
-function notify (subscribers, articles) {
-	var newOnes = articles.filter(function(article) {
-		if(article.new) return article
-	})
-	var send = {}
+function notify(subscribers, items) {
+    var send = {}
 
-	newOnes.forEach(function(article) {
-		subscribers.forEach(function (subscriber) {
-			subscriber.keywords.forEach(function(keyword) {
-				if(article.title.indexOf(keyword) > -1) {
-					send[subscriber.email] = send[subscriber.email] || []
-					send[subscriber.email].push(toHtml(article))
-					console.log('push');
-				}
-			})
-		})
-	})
-	Object.keys(send).forEach(function(email) {
-		transporter.sendMail({
-			from: 'hukuuu@gmail.com',
-			to: email,
-			subject:'new articles',
-			html: send[email].join('<br/>')
-		}, function(err, info) {
-			if(err) {
-				console.log('error sending mail to ', email);
-				console.log(err);
-			} else {
-				console.log(info);
-			}
-		})
-	})
-	console.log('i should send to ', Object.keys(send));
+    items.forEach(function(item) {
+        subscribers.forEach(function(subscriber) {
+            if (match(item, subscriber)) {
+                send[subscriber.email] = send[subscriber.email] || []
+                send[subscriber.email].push(item)
+            }
+        })
+    })
+
+    sendEmails(send)
 }
 
-function toHtml (article) {
-	return '<h1>' + article.title + '</h1><p><b>text:</b>' + article.text + '</p>'
+function match(item, subscriber) {
+    var text = item.comment ? item.comment.text : item.story.title,
+        keywords = subscriber.keywords
+
+    if (item.comment && subscriber.type.indexOf('comment') === -1)
+        return false
+    if (!item.comment && subscriber.type.indexOf('story' === -1))
+        return false
+
+    return matchText(text, keywords)
+}
+
+function matchText(text, keywords) {
+    var upper = text.toUpperCase()
+    var result = false
+    console.log('-----------------');
+    console.log(upper);
+
+    keywords.forEach(function(keyword) {
+        console.log(keyword.toUpperCase());
+        if (upper.indexOf(keyword.toUpperCase()) > -1)
+            result = true
+    })
+    return result
+}
+
+function sendEmails(send) {
+    Object.keys(send).forEach(function(email) {
+        mailSender.sendMail({
+            to: email,
+            subject: 'new items',
+            html: send[email].map(toHtml).join('<hr/>')
+        }, function(err, info) {
+            if (err) {
+                console.log('error sending mail to ', email);
+                console.log(err);
+            } else {
+                console.log(info);
+            }
+        })
+    })
+    console.log('i should send to ', Object.keys(send));
+}
+
+
+function toHtml(item) {
+    if (item.comment) {
+        return '<p>' + item.comment.text + '<p><p><a href="">article</a></p>'
+    } else {
+        return '<h1>' + item.story.title + '</h1><p>' + item.story.text + '</p>'
+    }
+
 }

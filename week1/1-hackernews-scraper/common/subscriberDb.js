@@ -1,47 +1,78 @@
 var storage = require('node-persist'),
-	SUBSCRIBERS = 'subscribers',
-	rand = require('generate-key');
+    SUBSCRIBERS = 'subscribers',
+    rand = require('generate-key');
 
-storage.initSync()//({dir: './subscribers'})
+storage.initSync() //({dir: './subscribers'})
 
-if(!getAll())
-	setAll([])
+if (!getAll())
+    setAll([])
 
 function getAll() {
-	var all = storage.getItem(SUBSCRIBERS)
-	return all;
+    var all = storage.getItem(SUBSCRIBERS)
+    return all;
 }
 
-function setAll (sbs) {
-	storage.setItem(SUBSCRIBERS, sbs)
+function setAll(sbs) {
+    storage.setItem(SUBSCRIBERS, sbs)
 }
 
-function subscribe (obj) {
-	var all = getAll()
-	obj.subscriberId = rand.generateKey();
-	all.push(obj)
-	setAll(all)
-	return {
-		email: obj.email,
-		subscriberId: obj.subscriberId
-	}
+function subscribe(obj) {
+    var all = getAll()
+    obj.subscriberId = rand.generateKey()
+    obj.key = rand.generateKey()
+    obj.verified = false
+    all.push(obj)
+    setAll(all)
+    return obj
 }
 
-function unsubscribe (obj) {
-	var all = getAll()
-	var item = all.filter(function(it) {
-		if(it.subscriberId === obj.subscriberId)
-			return it;
-	})[0]
-	if(item) {
-		all.splice(all.indexOf(item),1)
-		setAll(all)
-	}
+function unsubscribe(obj) {
+    var all = getAll()
+    var subscriber = all.filter(function(s) {
+        if (s.subscriberId === obj.subscriberId)
+            return s;
+    })[0]
+    if (subscriber) {
+        all.splice(all.indexOf(subscriber), 1)
+        setAll(all)
+    }
 
+}
+
+function verify(key) {
+    var all = getAll()
+    var subscriber = all.filter(function(s) {
+        return s.key === key && s
+    })[0]
+    if (subscriber) {
+        subscriber.verified = true
+        setAll(all)
+        return true
+    }
+    return false
+}
+
+function getAllNoKeys() {
+    return getAll().map(function(s) {
+        return {
+            email: s.email,
+            keywords: s.keywords,
+            type: s.type,
+            subscriberId: s.subscriberId,
+            verified: s.verified
+        }
+    })
+}
+function getAllVerified () {
+    return getAll().filter(function(s) {
+        return s.verified && s
+    })
 }
 
 module.exports = {
-	unsubscribe: unsubscribe,
-	subscribe: subscribe,
-	peek: getAll
+    unsubscribe: unsubscribe,
+    subscribe: subscribe,
+    peek: getAllNoKeys,
+    verify: verify,
+    getAllVerified: getAllVerified
 }

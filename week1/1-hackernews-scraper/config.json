@@ -1,0 +1,10 @@
+{
+    "notifier": {
+        "port": "3001",
+        "path": "/newArticles",
+        "method": "POST"
+    },
+    "wordCounter": {
+    	"port": "3002"
+    }
+}
