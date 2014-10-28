@@ -1,4 +1,4 @@
-var histogramDb = require('../common/histogramDb'),
+var histogramDb = require('../common/histogramDbMongo'),
     express = require('express'),
     bodyParser = require('body-parser'),
     app = express(),
@@ -12,37 +12,57 @@ app.use(bodyParser.urlencoded({
 }))
 
 app.get('/keywords', function(req, res) {
-	res.json(histogramDb.getAllKeywordsOrdered())
+    histogramDb.findAllWords()
+        .then(function(words) {
+            res.json(words)
+        })
+        .fail(res.end)
 })
 
 
 function forever() {
-	var lastItemId = histogramDb.getMaxIndex(),
-		keywords
-	hnApi.getItem(lastItemId, function(err, item) {
-		if(err)
-			console.log(err);
-		else {
-			keywords = getKeywords(item)
-			console.log('id: ' + lastItemId + ' kws: ' + keywords.join(' '));
-			histogramDb.addKeywords(keywords)
-			histogramDb.setMaxIndex(lastItemId + 1)
-		}
-	})
-	setTimeout(forever, 5000)
+    var keywords
+
+    histogramDb.getMaxIndex()
+        .then(function(lastItemId) {
+            console.log(lastItemId);
+            hnApi.getItem(lastItemId, function(err, item) {
+                if (err)
+                    console.log(err);
+                else {
+                    keywords = getKeywords(item)
+                    histogramDb.addWords(keywords)
+                        .then(function() {
+                            histogramDb.setMaxIndex(lastItemId + 1)
+                                .then(function() {
+                                    setTimeout(forever, 5000)
+                                })
+                        })
+                        .fail(console.log.bind(console))
+                }
+            })
+        })
+        .fail(console.log.bind(console))
+
 }
 
 function getKeywords(item) {
-	var kws = []
-	if(item.type === 'story') {
-		if(item.title)
-			kws = kws.concat(item.title.split(' '))
-		if(item.text)
-			kws = kws.concat(item.text.split(' '))
-	}
-	else
-		kws = kws.concat(item.text.split(' '))
-	return kws
+    var kws = []
+    if (!item) {
+        console.log(kws);
+        return kws
+    }
+
+    if (item.type === 'story') {
+        if (item.title)
+            kws = kws.concat(item.title.split(' '))
+        if (item.text)
+            kws = kws.concat(item.text.split(' '))
+    } else
+        kws = kws.concat(item.text.split(' '))
+
+    console.log(kws);
+    return kws
 }
 
 forever();
@@ -50,4 +70,3 @@ forever();
 var server = app.listen(config.wordCounter.port, function() {
     console.log('WordCounter listening on http://localhost:' + config.wordCounter.port)
 })
-
