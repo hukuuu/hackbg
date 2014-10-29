@@ -14,7 +14,13 @@ app.use(bodyParser.urlencoded({
 app.get('/keywords', function(req, res) {
     histogramDb.findAllWords()
         .then(function(words) {
-            res.json(words)
+            res.json(words.map(function(word,i) {
+                return {
+                    word: word._id.word,
+                    count: word.count,
+                    rank:i
+                }
+            }))
         })
         .fail(res.end)
 })
@@ -33,6 +39,7 @@ function forever() {
                     keywords = getKeywords(item)
                     histogramDb.addWords(keywords)
                         .then(function() {
+                            console.log(lastItemId + 1);
                             histogramDb.setMaxIndex(lastItemId + 1)
                                 .then(function() {
                                     setTimeout(forever, 5000)
@@ -58,8 +65,9 @@ function getKeywords(item) {
             kws = kws.concat(item.title.split(' '))
         if (item.text)
             kws = kws.concat(item.text.split(' '))
-    } else
+    } else if (item.text) {
         kws = kws.concat(item.text.split(' '))
+    }
 
     console.log(kws);
     return kws
