@@ -19,7 +19,7 @@ var itemDb = require('../common/itemDb'),
                 if (err)
                     console.log('fuck')
                 else if(items.length > 0) {
-                    console.log('save to notify ', items.length);
+                    console.log('save to notify ',items.length);
                     itemDb.addItems(items)
                     itemDb.setMaxIndex(item) //todo
                     callNotifier()
@@ -57,16 +57,18 @@ function scrapeItem(id, cb) {
 }
 
 function handleItem(item, cb) {
+    if(!item) return cb(null)
     if (item.type === 'story') {
-        cb(null, {
+        return cb(null, {
             story: item
         })
     } else if (item.type === 'comment') {
         hnApi.findStory(item, function(err, story) {
-            if (err)
-                cb(err)
+            if (err) {
+                return cb(err)
+            }
             else
-                cb(null, {
+                return cb(null, {
                     story: story,
                     comment: item
                 })
