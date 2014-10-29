@@ -1,0 +1,16 @@
+{
+  "name": "1-Who-Follows-You-Back",
+  "version": "0.0.0",
+  "description": "",
+  "main": "graph.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "mocha": "^2.0.1",
+    "sinon": "^1.11.1",
+    "chai": "^1.9.2"
+  }
+}
