@@ -6,6 +6,10 @@ var mongoose = require('mongoose'),
 module.exports = function(app) {
 
     app.post(config.endpoints.snippet_create, snippet.create)
+    app.get(config.endpoints.snippet_find, snippet.find)
+    app.put(config.endpoints.snippet_update, snippet.update)
+    app.get(config.endpoints.snippet_list, snippet.list)
+    app.delete(config.endpoints.snippet_delete, snippet.delete)
 
 
     //error handling

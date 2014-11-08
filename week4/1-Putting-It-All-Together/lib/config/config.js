@@ -8,7 +8,11 @@ var production = require('./env/production');
 var defaults = {
     root: path.normalize(__dirname + '/..'),
     endpoints: {
-        snippet_create: '/snippets'
+        snippet_create: '/snippets',
+        snippet_find: '/snippets/:id',
+        snippet_update: '/snippets/:id', //za semantika
+        snippet_list: '/snippets', //za semantika
+        snippet_delete: '/snippets/:id' //za semantika
     }
 };
 
