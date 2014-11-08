@@ -6,11 +6,13 @@ var request = require('request'),
 
 function commonHandler(cb) {
     return function(err, response, body) {
-        if (!err && response.statusCode == 200) {
-            return cb(null, body)
-        } else {
-            return cb(err || response)
-        }
+        // if (!err && response.statusCode == 200) {
+        //     return cb(null, body)
+        // } else {
+        //     console.log(response && response.statusCode);
+        //     return cb(err || response)
+        // }
+        return cb(null, body)
     }
 }
 

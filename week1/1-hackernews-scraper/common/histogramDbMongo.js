@@ -82,19 +82,51 @@ Db.prototype.findAllWords = function() {
     this.init()
         .then(function() {
             var words = me.db.collection('words')
-            words.find().toArray(function(err, result) {
-                if (err) {
-                    defered.reject(err)
-                } else {
-                    defered.resolve(result)
+            words.aggregate([{
+                $group:{
+                    _id:{
+                        word:"$word"
+                    },
+                    count:{
+                        $sum:1
+                    }
                 }
+            },{
+                $sort:{
+                    count:-1
+                }
+            }], function(err, res) {
+                if(err)
+                    defered.reject(err)
+                else
+                    defered.resolve(res)
             })
         })
         .fail(function(err) {
             defered.reject(err)
         })
     return defered.promise
-}
+};
+
+// Db.prototype.findAllWords = function() {
+//     var defered = q.defer()
+//     var me = this
+//     this.init()
+//         .then(function() {
+//             var words = me.db.collection('words')
+//             words.find().toArray(function(err, result) {
+//                 if (err) {
+//                     defered.reject(err)
+//                 } else {
+//                     defered.resolve(result)
+//                 }
+//             })
+//         })
+//         .fail(function(err) {
+//             defered.reject(err)
+//         })
+//     return defered.promise
+// }
 Db.prototype.setMaxIndex = function(index) {
     var defered = q.defer()
     var me = this
@@ -129,11 +161,17 @@ Db.prototype.getMaxIndex = function() {
             var max = me.db.collection('max')
             max.findOne({
                 max: 'max'
-            }, function(err, max) {
+            }, function(err, dbMax) {
                 if (err) {
                     defered.reject(err)
                 } else {
-                    defered.resolve(max && (max.count || 0) || 0)
+                    if(!dbMax) {
+                        defered.resolve(1)
+                        max.insert({max:'max',count:1},function() {
+                        })
+                    } else {
+                        defered.resolve(dbMax.count)
+                    }
                 }
             })
         })

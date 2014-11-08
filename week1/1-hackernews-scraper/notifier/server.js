@@ -18,7 +18,7 @@ app.post(config.notifier.path, function(req, res) {
         subscribers = subscriberDb.getAllVerified()
     console.log('I SHOULD UPDATE');
     res.end('ok')
-
+    console.log(subscribers.length, items.length);
     notify(subscribers, items)
 })
 

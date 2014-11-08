@@ -1,0 +1,17 @@
+{
+  "name": "2-Skip-Skip-Next",
+  "version": "1.0.0",
+  "description": "Last week, we finished the Scraper that wanted to read the entire HackerNews! Now, we are going to migrate the persist layer to Django and after this, play with the different queries and commands.",
+  "main": "index.js",
+  "dependencies": {
+    "express": "^4.10.1",
+    "mongodb": "^1.4.19",
+    "q": "^1.0.1"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC"
+}
