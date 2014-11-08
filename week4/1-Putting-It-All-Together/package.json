@@ -1,0 +1,20 @@
+{
+  "name": "1-Putting-It-All-Together",
+  "version": "0.0.0",
+  "description": "So far, we have finished the first part in our NodeJS Journey.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "chai": "^1.9.2",
+    "supertest": "^0.14.0"
+  },
+  "dependencies": {
+    "express": "^4.10.1",
+    "mongoose": "^3.8.18",
+    "body-parser": "^1.9.2"
+  }
+}
