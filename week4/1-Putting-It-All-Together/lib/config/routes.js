@@ -10,6 +10,7 @@ module.exports = function(app) {
     app.put(config.endpoints.snippet_update, snippet.update)
     app.get(config.endpoints.snippet_list, snippet.list)
     app.delete(config.endpoints.snippet_delete, snippet.delete)
+    app.get(config.endpoints.snippet_list_by_creator, snippet.listByCreator)
 
 
     //error handling

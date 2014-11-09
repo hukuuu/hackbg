@@ -81,6 +81,16 @@ module.exports = {
       }
 
     })
+  },
+  listByCreator: function(req, res) {
+    var creator = req.param('creator')
+    Snippet.find({creator:creator}, function(err, docs){
+      if(err) {
+        onError('400', res, err)
+      } else {
+        res.json(docs).end()
+      }
+    })
   }
 };
 

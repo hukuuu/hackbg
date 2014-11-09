@@ -34,7 +34,7 @@ describe('API', function() {
     .expect(400, done)
   });
 
-  it('added snippets should exist', function(done) {
+  it('should find snippet by id', function(done) {
     request.post(config.endpoints.snippet_create)
     .set('Content-Type','application/json')
     .send(validSnippet)
@@ -96,14 +96,17 @@ describe('API', function() {
     })
   });
 
-  // it('can LIST snippets by creator', function(done) {
-  //  assert(false)
-  //  done()
-  // });
-
-  // it('can SHOW snippet by id', function(done) {
-  //  assert(false)
-  //  done()
-  // });
+  it('can list snippets by creator', function(done) {
+    request.get(config.endpoints.snippet_list_by_creator.replace(':creator','tester'))
+    .send()
+    .end(function(req, res){
+      expect(res.body).to.be.defined
+      expect(res.body).length.to.be.defined
+      res.body.forEach(function(snippet){
+        expect(snippet.creator).to.equal('tester')
+      })
+      done()
+    })
+  });
 
 });

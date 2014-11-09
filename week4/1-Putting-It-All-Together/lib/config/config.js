@@ -12,7 +12,8 @@ var defaults = {
         snippet_find: '/snippets/:id',
         snippet_update: '/snippets/:id', //za semantika
         snippet_list: '/snippets', //za semantika
-        snippet_delete: '/snippets/:id' //za semantika
+        snippet_delete: '/snippets/:id', //za semantika
+        snippet_list_by_creator: '/:creator/snippets'
     }
 };
 
