@@ -1,4 +1,4 @@
-var Node = require('../lib/node.js');
+var Node = require('../lib/graph/node.js');
 
 describe('node', function() {
 

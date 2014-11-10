@@ -1,4 +1,4 @@
-var Graph = require('../lib/graph.js');
+var Graph = require('../lib/graph/graph.js');
 
 describe('graph', function() {
 	var graph;
