@@ -24,6 +24,8 @@
     "express": "^4.9.3",
     "express-session": "^1.8.2",
     "forever": "^0.11.1",
+    "highland": "^2.0.0",
+    "htmlparser2": "^3.8.2",
     "levenshtein": "^1.0.5",
     "method-override": "^2.2.0",
     "mongoose": "^3.9.2",
